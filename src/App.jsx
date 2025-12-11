@@ -177,11 +177,6 @@ function App() {
         <ChannelList channels={channels} active={activeChannelId} onSelect={setActiveChannelId} onDelete={deleteChannel} />
         <Chat channel={{ ...activeChannel, messages: activeMessages }} onSend={(author, text) => sendMessage(activeChannelId, author, text)} userName={userDisplayName} />
       </div>
-      <div className="right-panel">
-        <div className="brand">Kalivan</div>
-        <div className="user-info">{userDisplayName || user?.email} — {t('online')}</div>
-        <div style={{marginTop:12}}><button onClick={() => logout()} style={{padding:'6px 10px',borderRadius:8,background:'transparent',border:'1px solid rgba(255,255,255,0.04)',color:'var(--muted)'}}>{t('signout')}</button></div>
-      </div>
     </div>
   )
 }
