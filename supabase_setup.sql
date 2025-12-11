@@ -65,9 +65,20 @@ CREATE POLICY "Authenticated users can insert messages" ON messages
 -- Function to handle new user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  user_name TEXT;
+  disc INTEGER;
 BEGIN
-  INSERT INTO public.profiles (id, name)
-  VALUES (NEW.id, NEW.raw_user_meta_data->>'name');
+  user_name := NEW.raw_user_meta_data->>'name';
+  -- Generate unique discriminator
+  SELECT COALESCE(MAX(discriminator), 0) + 1 INTO disc
+  FROM profiles
+  WHERE name = user_name;
+  IF disc < 1 THEN disc := 1; END IF;
+  IF disc > 9999 THEN disc := 9999; END IF; -- or handle overflow
+  
+  INSERT INTO public.profiles (id, name, discriminator)
+  VALUES (NEW.id, user_name, disc);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -81,6 +92,9 @@ CREATE TRIGGER on_auth_user_created
 INSERT INTO channels (name, created_by) VALUES
   ('general', NULL),
   ('random', NULL);
+
+-- Update existing profiles to have discriminator
+UPDATE profiles SET discriminator = 1 WHERE discriminator IS NULL;
 
 -- Create friends table
 CREATE TABLE friends (
