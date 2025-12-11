@@ -150,8 +150,8 @@ export default function FriendsModal({ onClose }){
 
   return (
     <>
-      <div className="settings-overlay" onClick={onClose} />
-      <div className="friends-modal settings-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="settings-overlay" onClick={() => { console.log('overlay click'); onClose(); }} />
+      <div className="friends-modal settings-modal" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
         <div className="settings-header">
           <h3>{t('friends')}</h3>
           <button className="close-btn" onClick={onClose}>×</button>
@@ -160,7 +160,7 @@ export default function FriendsModal({ onClose }){
           <div className="settings-panel">
             <div style={{marginBottom: '16px'}} onClick={(e) => e.stopPropagation()}>
               <label>{t('add_friend')}</label>
-              <input onClick={(e) => e.stopPropagation()} 
+              <input onClick={(e) => { console.log('input click'); e.stopPropagation(); }} onMouseDown={(e) => { console.log('input mousedown'); e.stopPropagation(); }} 
                 type="text" 
                 placeholder="Username#0000" 
                 style={{width: '100%', marginTop: '6px'}} 
