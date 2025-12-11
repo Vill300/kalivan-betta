@@ -85,7 +85,7 @@ export default function FriendsModal({ onClose }){
           <div className="settings-panel">
             <div style={{marginBottom: '16px'}} onClick={(e) => e.stopPropagation()}>
               <label>{t('add_friend')}</label>
-              <input 
+              <input onClick={(e) => e.stopPropagation()} 
                 type="text" 
                 placeholder="Username#0000" 
                 style={{width: '100%', marginTop: '6px'}} 
