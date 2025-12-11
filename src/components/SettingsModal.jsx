@@ -32,8 +32,8 @@ export default function SettingsModal({ onClose, initialTab }){
   }
 
   return (
-    <div className="settings-overlay" onMouseDown={onClose}>
-      <div className="settings-modal" onMouseDown={e=>e.stopPropagation()} role="dialog" aria-modal="true">
+    <div className="settings-overlay" onClick={onClose}>
+      <div className="settings-modal" onClick={e=>e.stopPropagation()} role="dialog" aria-modal="true">
           <div className="settings-header">
             <h3>{t('settings')}</h3>
             <button className="close-btn" onClick={onClose}>✕</button>
