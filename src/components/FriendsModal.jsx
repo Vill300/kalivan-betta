@@ -150,8 +150,8 @@ export default function FriendsModal({ onClose }){
 
   return (
     <>
-      <div className="settings-overlay" onClick={() => { console.log('overlay click'); onClose(); }} />
-      <div className="friends-modal settings-modal" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+      <div className="settings-overlay" onClick={(e) => { if (e.target === e.currentTarget) { console.log('overlay click'); onClose(); } }} onMouseDown={(e) => { if (e.target === e.currentTarget) { console.log('overlay mousedown'); onClose(); } }} />
+      <div className="friends-modal settings-modal" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} onMouseDownCapture={(e) => e.stopPropagation()} onClickCapture={(e) => e.stopPropagation()}>
         <div className="settings-header">
           <h3>{t('friends')}</h3>
           <button className="close-btn" onClick={onClose}>×</button>
