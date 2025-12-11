@@ -27,8 +27,8 @@ const translations = {
     ,voice_video: 'Voice & Video'
     ,chat: 'Chat'
     ,notifications: 'Notifications'
-    ,friends: 'Friends'
-    ,requests: 'Requests'
+    
+    
     ,app_name: 'Kalivan'
     ,welcome_back: 'Welcome back to Kalivan'
     ,welcome_new: 'Create your account'
@@ -73,8 +73,8 @@ const translations = {
     ,voice_video: 'Голос и видео'
     ,chat: 'Чат'
     ,notifications: 'Уведомления'
-    ,friends: 'Друзья'
-    ,requests: 'Запросы общения'
+    
+    
     ,app_name: 'Kalivan'
     ,welcome_back: 'Добро пожаловать в Kalivan'
     ,welcome_new: 'Создайте свой аккаунт'
@@ -119,8 +119,8 @@ const translations = {
     ,voice_video: 'Голос і відео'
     ,chat: 'Чат'
     ,notifications: 'Сповіщення'
-    ,friends: 'Друзі'
-    ,requests: 'Запити спілкування'
+    
+    
     ,app_name: 'Kalivan'
     ,welcome_back: 'З поверненням до Kalivan'
     ,welcome_new: 'Створіть свій акаунт'

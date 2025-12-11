@@ -27,16 +27,6 @@ CREATE TABLE messages (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Create friends table
-CREATE TABLE friends (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  requester_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  addressee_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
-  UNIQUE(requester_id, addressee_id)
-);
-
 -- Enable Row Level Security
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE channels ENABLE ROW LEVEL SECURITY;
@@ -71,16 +61,6 @@ CREATE POLICY "Anyone can view messages in channels" ON messages
 
 CREATE POLICY "Authenticated users can insert messages" ON messages
   FOR INSERT WITH CHECK (auth.role() = 'authenticated' AND auth.uid() = user_id);
-
--- Friends policies
-CREATE POLICY "Users can view their own friend requests" ON friends
-  FOR SELECT USING (auth.uid() = requester_id OR auth.uid() = addressee_id);
-
-CREATE POLICY "Users can create friend requests" ON friends
-  FOR INSERT WITH CHECK (auth.uid() = requester_id);
-
-CREATE POLICY "Users can update their friend requests" ON friends
-  FOR UPDATE USING (auth.uid() = addressee_id);
 
 -- Function to handle new user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()

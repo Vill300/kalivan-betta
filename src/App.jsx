@@ -4,7 +4,6 @@ import ServerList from './components/ServerList'
 import ChannelList from './components/ChannelList'
 import Chat from './components/Chat'
 import AuthPage from './components/AuthPage'
-import FriendsModal from './components/FriendsModal'
 import { useAuth } from './AuthContext'
 import { useLang } from './LangContext'
 import { supabase } from './supabaseClient'
@@ -16,7 +15,6 @@ function App() {
   const [messages, setMessages] = useState({})
   const [activeChannelId, setActiveChannelId] = useState(null)
   const [userDisplayName, setUserDisplayName] = useState('')
-  const [showFriendsModal, setShowFriendsModal] = useState(false)
 
   useEffect(() => {
     if (!user) {
@@ -176,7 +174,7 @@ function App() {
     <div className="app">
       <ServerList />
       <div className="main-area">
-        <ChannelList channels={channels} active={activeChannelId} onSelect={setActiveChannelId} onDelete={deleteChannel} onFriendsClick={() => setShowFriendsModal(true)} />
+        <ChannelList channels={channels} active={activeChannelId} onSelect={setActiveChannelId} onDelete={deleteChannel} />
         <Chat channel={{ ...activeChannel, messages: activeMessages }} onSend={(author, text) => sendMessage(activeChannelId, author, text)} userName={userDisplayName} />
       </div>
       <div className="right-panel">
@@ -184,7 +182,6 @@ function App() {
         <div className="user-info">{userDisplayName || user?.email} — {t('online')}</div>
         <div style={{marginTop:12}}><button onClick={() => logout()} style={{padding:'6px 10px',borderRadius:8,background:'transparent',border:'1px solid rgba(255,255,255,0.04)',color:'var(--muted)'}}>{t('signout')}</button></div>
       </div>
-      {showFriendsModal && <FriendsModal key="friends-modal" onClose={() => { console.log('closing friends modal'); setShowFriendsModal(false); }} />}
     </div>
   )
 }
