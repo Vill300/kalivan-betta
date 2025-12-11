@@ -76,7 +76,7 @@ export default function FriendsModal({ onClose }){
   return (
     <>
       <div className="settings-overlay" onClick={onClose} />
-      <div className="friends-modal settings-modal">
+      <div className="friends-modal settings-modal" onClick={(e) => e.stopPropagation()}>
         <div className="settings-header">
           <h3>{t('friends')}</h3>
           <button className="close-btn" onClick={onClose}>×</button>
