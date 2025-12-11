@@ -83,7 +83,7 @@ export default function FriendsModal({ onClose }){
         </div>
         <div className="settings-body">
           <div className="settings-panel">
-            <div style={{marginBottom: '16px'}}>
+            <div style={{marginBottom: '16px'}} onClick={(e) => e.stopPropagation()}>
               <label>{t('add_friend')}</label>
               <input 
                 type="text" 
@@ -92,7 +92,7 @@ export default function FriendsModal({ onClose }){
                 value={friendUsername}
                 onChange={(e) => setFriendUsername(e.target.value)}
               />
-              <button style={{marginTop: '8px'}} onClick={(e) => { e.stopPropagation(); addFriend(); }} disabled={loading}>
+              <button style={{marginTop: '8px'}} onClick={addFriend} disabled={loading}>
                 {loading ? 'Adding...' : t('add')}
               </button>
             </div>
