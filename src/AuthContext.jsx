@@ -15,7 +15,7 @@ export function AuthProvider({ children }){
         if (error) {
           console.error('Error getting session:', error)
         }
-        setUser(session?.user ?? null)
+        setUser(null) // Не восстанавливать сессию
       } catch (err) {
         console.error('Session fetch failed:', err)
         setUser(null)

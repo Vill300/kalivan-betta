@@ -18,6 +18,10 @@ export default function ServerList(){
   useEffect(()=>{ localStorage.setItem('kalivan_deaf', JSON.stringify(deaf)) }, [deaf])
   const [showSettings, setShowSettings] = useState(false)
 
+  useEffect(() => {
+    setShowSettings(false)
+  }, [user])
+
   return (
     <>
       <div className="server-list">
