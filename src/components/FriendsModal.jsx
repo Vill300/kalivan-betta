@@ -92,7 +92,7 @@ export default function FriendsModal({ onClose }){
                 value={friendUsername}
                 onChange={(e) => setFriendUsername(e.target.value)}
               />
-              <button style={{marginTop: '8px'}} onClick={addFriend} disabled={loading}>
+              <button style={{marginTop: '8px'}} onClick={(e) => { e.stopPropagation(); addFriend(); }} disabled={loading}>
                 {loading ? 'Adding...' : t('add')}
               </button>
             </div>
