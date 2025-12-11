@@ -3,9 +3,9 @@ import { useAuth } from '../AuthContext'
 import { useLang } from '../LangContext'
 import { supabase } from '../supabaseClient'
 
-export default function SettingsModal({ open, onClose }){
+export default function SettingsModal({ onClose, initialTab }){
   const { user, login, logout } = useAuth()
-  const [tab, setTab] = useState('account')
+  const [tab, setTab] = useState(initialTab || 'account')
   const [name, setName] = useState(user?.name || '')
   const { t, lang, setLang } = useLang()
   const [friendSearch, setFriendSearch] = useState('')
@@ -13,13 +13,11 @@ export default function SettingsModal({ open, onClose }){
   const [requests, setRequests] = useState([])
 
   useEffect(()=>{
-    if(open){
-      setName(user?.name || '')
-      const onKey = (e)=>{ if(e.key === 'Escape') onClose() }
-      window.addEventListener('keydown', onKey)
-      return ()=> window.removeEventListener('keydown', onKey)
-    }
-  }, [open, user, onClose])
+    setName(user?.name || '')
+    const onKey = (e)=>{ if(e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return ()=> window.removeEventListener('keydown', onKey)
+  }, [user, onClose])
 
   useEffect(() => {
     if (tab === 'friends' && user) {
@@ -65,8 +63,6 @@ export default function SettingsModal({ open, onClose }){
 
     setRequests(requestsList)
   }
-
-  if(!open) return null
 
   function saveAccount(){
     const n = name.trim()
