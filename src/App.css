@@ -39,7 +39,8 @@ body{margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe
 
 /* Settings modal styles */
 .settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:60}
-.settings-modal{width:1100px;max-width:96%;height:85vh;max-height:96vh;background:linear-gradient(180deg,#0b0f12,#0f1418);border:1px solid rgba(255,255,255,0.04);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.7);color:var(--white);display:flex;flex-direction:column;overflow:hidden}
+.settings-modal{width:1100px;max-width:96%;height:85vh;max-height:96vh;background:linear-gradient(180deg,#1a1f25,#14181c);border:1px solid rgba(255,255,255,0.04);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.7);color:var(--white);display:flex;flex-direction:column;overflow:hidden}
+.friends-modal{width:1400px;}
 .settings-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.03)}
 .settings-header h3{margin:0}
 .close-btn{background:transparent;border:none;color:var(--muted);font-size:16px;cursor:pointer}

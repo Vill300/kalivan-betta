@@ -16,6 +16,8 @@ const translations = {
     online: 'Online',
     send: 'Send'
     ,friends: 'Friends'
+    ,add_friend: 'Add Friend'
+    ,add: 'Add'
     ,language: 'Language'
     ,delete_channel: 'Delete channel'
     ,edit_profile: 'Edit profile'
@@ -63,6 +65,8 @@ const translations = {
     online: 'В сети',
     send: 'Отправить'
     ,friends: 'Друзья'
+    ,add_friend: 'Добавить друга'
+    ,add: 'Добавить'
     ,language: 'Язык'
     ,delete_channel: 'Удалить канал'
     ,edit_profile: 'Редактировать профиль'
@@ -110,6 +114,8 @@ const translations = {
     online: 'Онлайн',
     send: 'Відправити'
     ,friends: 'Друзья'
+    ,add_friend: 'Додати друга'
+    ,add: 'Додати'
     ,language: 'Мова'
     ,delete_channel: 'Видалити канал'
     ,edit_profile: 'Редагувати профіль'

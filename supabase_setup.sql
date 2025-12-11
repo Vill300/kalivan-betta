@@ -81,3 +81,26 @@ CREATE TRIGGER on_auth_user_created
 INSERT INTO channels (name, created_by) VALUES
   ('general', NULL),
   ('random', NULL);
+
+-- Create friends table
+CREATE TABLE friends (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  friend_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  UNIQUE(user_id, friend_id)
+);
+
+-- Enable RLS for friends
+ALTER TABLE friends ENABLE ROW LEVEL SECURITY;
+
+-- Friends policies
+CREATE POLICY "Users can view their own friendships" ON friends
+  FOR SELECT USING (auth.uid() = user_id OR auth.uid() = friend_id);
+
+CREATE POLICY "Users can insert friendships" ON friends
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their friendships" ON friends
+  FOR UPDATE USING (auth.uid() = user_id OR auth.uid() = friend_id);
