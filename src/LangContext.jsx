@@ -45,6 +45,7 @@ const translations = {
     ,loading: 'Loading...'
     ,auth_error: 'Authentication error'
     ,signup_success: 'Registration successful, please sign in'
+    ,email_already_exists: 'Email already exists'
   },
   ru: {
     signin_title: 'Войдите в Kalivan',
@@ -90,6 +91,7 @@ const translations = {
     ,loading: 'Загрузка...'
     ,auth_error: 'Ошибка аутентификации'
     ,signup_success: 'Регистрация успешна, войдите в систему'
+    ,email_already_exists: 'Электронная почта уже используется'
   },
   uk: {
     signin_title: 'Увійдіть в Kalivan',
@@ -135,6 +137,7 @@ const translations = {
     ,loading: 'Завантаження...'
     ,auth_error: 'Помилка аутентифікації'
     ,signup_success: 'Реєстрація успішна, увійдіть в систему'
+    ,email_already_exists: 'Електронна пошта вже використовується'
   }
 }
 

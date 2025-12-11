@@ -14,12 +14,27 @@ function App() {
   const [channels, setChannels] = useState([])
   const [messages, setMessages] = useState({})
   const [activeChannelId, setActiveChannelId] = useState(null)
-  const [loadingData, setLoadingData] = useState(true)
+  const [userDisplayName, setUserDisplayName] = useState('')
 
   useEffect(() => {
-    if (!user) return
+    if (!user) {
+      setUserDisplayName('')
+      return
+    }
 
-    const loadChannels = async () => {
+    const loadData = async () => {
+      // Load user profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('name, discriminator')
+        .eq('id', user.id)
+        .single()
+
+      if (!profileError && profileData) {
+        setUserDisplayName(profileData.name + '#' + profileData.discriminator.toString().padStart(4, '0'))
+      }
+
+      // Load channels
       const { data: channelsData, error } = await supabase
         .from('channels')
         .select('*')
@@ -44,7 +59,8 @@ function App() {
             id,
             content,
             created_at,
-            profiles:user_id (name)
+            user_id,
+            profiles:user_id (name, discriminator)
           `)
           .eq('channel_id', channel.id)
           .order('created_at')
@@ -52,17 +68,17 @@ function App() {
         if (!msgError) {
           messagesData[channel.id] = msgs.map(msg => ({
             id: msg.id,
-            author: msg.profiles?.name || 'Unknown',
+            user_id: msg.user_id,
+            author: msg.user_id === user.id ? userDisplayName : (msg.profiles?.name ? msg.profiles.name + '#' + msg.profiles.discriminator.toString().padStart(4, '0') : 'Unknown'),
             text: msg.content,
             time: new Date(msg.created_at).toLocaleTimeString()
           }))
         }
       }
       setMessages(messagesData)
-      setLoadingData(false)
     }
 
-    loadChannels()
+    loadData()
 
     // Subscribe to new messages
     const channel = supabase
@@ -82,7 +98,8 @@ function App() {
             ...(prev[newMessage.channel_id] || []),
             {
               id: newMessage.id,
-              author: profile?.name || 'Unknown',
+              user_id: newMessage.user_id,
+              author: newMessage.user_id === user.id ? userDisplayName : (profile?.name ? profile.name + '#' + profile.discriminator.toString().padStart(4, '0') : 'Unknown'),
               text: newMessage.content,
               time: new Date(newMessage.created_at).toLocaleTimeString()
             }
@@ -95,6 +112,21 @@ function App() {
       supabase.removeChannel(channel)
     }
   }, [user])
+
+  // Update messages when userDisplayName changes
+  useEffect(() => {
+    if (!user || !userDisplayName) return
+    setMessages(prev => {
+      const newMessages = {}
+      for (const channelId in prev) {
+        newMessages[channelId] = prev[channelId].map(msg => ({
+          ...msg,
+          author: msg.user_id === user.id ? userDisplayName : msg.author
+        }))
+      }
+      return newMessages
+    })
+  }, [userDisplayName, user])
 
   async function deleteChannel(channelId){
     const { error } = await supabase
@@ -135,7 +167,7 @@ function App() {
   const activeChannel = channels.find(c => c.id === activeChannelId)
   const activeMessages = messages[activeChannelId] || []
 
-  if(loadingData) return <div>Loading...</div>
+  if(loading) return <div>Loading...</div>
   if(!user) return <AuthPage />
 
   return (
@@ -143,11 +175,11 @@ function App() {
       <ServerList />
       <div className="main-area">
         <ChannelList channels={channels} active={activeChannelId} onSelect={setActiveChannelId} onDelete={deleteChannel} />
-        <Chat channel={{ ...activeChannel, messages: activeMessages }} onSend={(author, text) => sendMessage(activeChannelId, author, text)} />
+        <Chat channel={{ ...activeChannel, messages: activeMessages }} onSend={(author, text) => sendMessage(activeChannelId, author, text)} userName={userDisplayName} />
       </div>
       <div className="right-panel">
         <div className="brand">Kalivan</div>
-        <div className="user-info">{user?.user_metadata?.name || user?.email} — {t('online')}</div>
+        <div className="user-info">{userDisplayName || user?.email} — {t('online')}</div>
         <div style={{marginTop:12}}><button onClick={() => logout()} style={{padding:'6px 10px',borderRadius:8,background:'transparent',border:'1px solid rgba(255,255,255,0.04)',color:'var(--muted)'}}>{t('signout')}</button></div>
       </div>
     </div>

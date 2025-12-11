@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../AuthContext'
 import { useLang } from '../LangContext'
+import { supabase } from '../supabaseClient'
 
 export default function SettingsModal({ open, onClose }){
   const { user, login, logout } = useAuth()
   const [tab, setTab] = useState('account')
   const [name, setName] = useState(user?.name || '')
   const { t, lang, setLang } = useLang()
+  const [friendSearch, setFriendSearch] = useState('')
+  const [friends, setFriends] = useState([])
+  const [requests, setRequests] = useState([])
 
   useEffect(()=>{
     if(open){
@@ -16,6 +20,51 @@ export default function SettingsModal({ open, onClose }){
       return ()=> window.removeEventListener('keydown', onKey)
     }
   }, [open, user, onClose])
+
+  useEffect(() => {
+    if (tab === 'friends' && user) {
+      loadFriends()
+    }
+  }, [tab, user])
+
+  async function loadFriends() {
+    // Load accepted friends
+    const { data: friendsData } = await supabase
+      .from('friends')
+      .select(`
+        id,
+        requester:requester_id (name, discriminator),
+        addressee:addressee_id (name, discriminator)
+      `)
+      .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
+      .eq('status', 'accepted')
+
+    const friendsList = friendsData?.map(f => ({
+      id: f.id,
+      name: f.requester_id === user.id ? f.addressee.name + '#' + f.addressee.discriminator.toString().padStart(4, '0') : f.requester.name + '#' + f.requester.discriminator.toString().padStart(4, '0')
+    })) || []
+
+    setFriends(friendsList)
+
+    // Load pending requests
+    const { data: requestsData } = await supabase
+      .from('friends')
+      .select(`
+        id,
+        requester:requester_id (name, discriminator),
+        addressee:addressee_id (name, discriminator)
+      `)
+      .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
+      .eq('status', 'pending')
+
+    const requestsList = requestsData?.map(r => ({
+      id: r.id,
+      name: r.requester_id === user.id ? r.addressee.name + '#' + r.addressee.discriminator.toString().padStart(4, '0') : r.requester.name + '#' + r.requester.discriminator.toString().padStart(4, '0'),
+      outgoing: r.requester_id === user.id
+    })) || []
+
+    setRequests(requestsList)
+  }
 
   if(!open) return null
 
@@ -28,6 +77,64 @@ export default function SettingsModal({ open, onClose }){
     try{ localStorage.setItem('kalivan_lang', lang) }catch(e){}
     try{ window.dispatchEvent(new CustomEvent('kalivan:lang', { detail: lang })) }catch(e){}
     onClose()
+  }
+
+  async function sendFriendRequest() {
+    const search = friendSearch.trim()
+    if (!search) return
+
+    // Parse name#discriminator
+    const match = search.match(/^(.+)#(\d{4})$/)
+    if (!match) return alert('Invalid format. Use name#0001')
+
+    const name = match[1]
+    const discriminator = parseInt(match[2])
+
+    // Find user
+    const { data: userData } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('name', name)
+      .eq('discriminator', discriminator)
+      .single()
+
+    if (!userData) return alert('User not found')
+
+    // Check if already friends or requested
+    const { data: existing } = await supabase
+      .from('friends')
+      .select('id')
+      .or(`and(requester_id.eq.${user.id},addressee_id.eq.${userData.id}),and(requester_id.eq.${userData.id},addressee_id.eq.${user.id})`)
+
+    if (existing && existing.length > 0) return alert('Already friends or request exists')
+
+    // Send request
+    await supabase
+      .from('friends')
+      .insert({
+        requester_id: user.id,
+        addressee_id: userData.id,
+        status: 'pending'
+      })
+
+    setFriendSearch('')
+    loadFriends()
+  }
+
+  async function acceptRequest(id) {
+    await supabase
+      .from('friends')
+      .update({ status: 'accepted' })
+      .eq('id', id)
+    loadFriends()
+  }
+
+  async function declineRequest(id) {
+    await supabase
+      .from('friends')
+      .update({ status: 'declined' })
+      .eq('id', id)
+    loadFriends()
   }
 
   function doSignOut(){
@@ -47,6 +154,7 @@ export default function SettingsModal({ open, onClose }){
             <div className="nav-group">
               <div className="nav-title">{t('settings')}</div>
               <button className={tab==='account'? 'active':''} onClick={()=>setTab('account')}>{t('account')}</button>
+              <button className={tab==='friends'? 'active':''} onClick={()=>setTab('friends')}>{t('friends')}</button>
               <button className={tab==='language'? 'active':''} onClick={()=>setTab('language')}>{t('language')}</button>
               <button className={tab==='appearance'? '':null} onClick={()=>setTab('appearance')}>{t('appearance')}</button>
               <button className={tab==='voice'? '':null} onClick={()=>setTab('voice')}>{t('voice_video')}</button>
@@ -97,6 +205,46 @@ export default function SettingsModal({ open, onClose }){
 
                     
                   </div>
+                </div>
+              </div>
+            )}
+
+            {tab === 'friends' && (
+              <div>
+                <div style={{marginBottom:16}}>
+                  <input
+                    type="text"
+                    placeholder="name#0001"
+                    value={friendSearch}
+                    onChange={e => setFriendSearch(e.target.value)}
+                    style={{width:200,padding:8,borderRadius:8,border:'1px solid rgba(255,255,255,0.04)',background:'rgba(255,255,255,0.02)',color:'var(--white)'}}
+                  />
+                  <button onClick={sendFriendRequest} style={{marginLeft:8}}>Add Friend</button>
+                </div>
+
+                <div>
+                  <h4>{t('friends')}</h4>
+                  {friends.map(f => (
+                    <div key={f.id} style={{padding:8, border:'1px solid rgba(255,255,255,0.04)', borderRadius:8, marginBottom:8}}>
+                      {f.name}
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{marginTop:16}}>
+                  <h4>{t('requests')}</h4>
+                  {requests.map(r => (
+                    <div key={r.id} style={{padding:8, border:'1px solid rgba(255,255,255,0.04)', borderRadius:8, marginBottom:8, display:'flex', justifyContent:'space-between'}}>
+                      <span>{r.name}</span>
+                      {!r.outgoing && (
+                        <div>
+                          <button onClick={() => acceptRequest(r.id)}>Accept</button>
+                          <button onClick={() => declineRequest(r.id)} style={{marginLeft:8}}>Decline</button>
+                        </div>
+                      )}
+                      {r.outgoing && <span>Pending</span>}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

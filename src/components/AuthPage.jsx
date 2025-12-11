@@ -33,11 +33,13 @@ export default function AuthPage(){
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [showLangMenu, setShowLangMenu] = useState(false)
   const [loading, setLoading] = useState(false)
 
   async function handleAuth(){
     setError('')
+    setSuccess('')
     setLoading(true)
 
     try {
@@ -85,12 +87,16 @@ export default function AuthPage(){
         // Registration logic
         const result = await register(email.trim(), password, name.trim())
         if (result.user) {
-          setError(t('signup_success'))
+          setSuccess(t('signup_success'))
           setMode('login')
         }
       }
     } catch (err) {
-      setError(err.message || t('auth_error'))
+      let errorMessage = err.message || t('auth_error')
+      if (errorMessage.includes('User already registered') || errorMessage.includes('already registered')) {
+        errorMessage = t('email_already_exists')
+      }
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -156,6 +162,7 @@ export default function AuthPage(){
           )}
 
           {error && <div className="auth-error">{error}</div>}
+          {success && <div className="auth-success">{success}</div>}
 
           <button type="submit" className="auth-btn" disabled={loading}>
             {loading ? t('loading') : (mode === 'login' ? t('signin') : t('signup'))}

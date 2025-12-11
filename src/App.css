@@ -123,6 +123,7 @@ body{margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe
 .form-group input::placeholder{color:var(--muted)}
 .form-group input:focus{outline:none;border-color:var(--accent);background:rgba(255,255,255,0.03)}
 .auth-error{background:rgba(255,0,0,0.1);border:1px solid rgba(255,0,0,0.2);color:#ff6b6b;padding:10px 12px;border-radius:8px;font-size:13px}
+.auth-success{background:rgba(0,255,0,0.1);border:1px solid rgba(0,255,0,0.2);color:#4caf50;padding:10px 12px;border-radius:8px;font-size:13px}
 .auth-btn{padding:12px;background:var(--accent);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px}
 .auth-btn:hover{background:#7289d9}
 .auth-toggle{text-align:center;margin-top:16px;color:var(--muted);font-size:13px}

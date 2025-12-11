@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useAuth } from '../AuthContext'
 import { useLang } from '../LangContext'
 
-export default function MessageInput({onSend, placeholder}){
+export default function MessageInput({onSend, placeholder, userName}){
   const [text, setText] = useState('')
   const { user } = useAuth()
   const { t } = useLang()
@@ -10,7 +10,7 @@ export default function MessageInput({onSend, placeholder}){
   function submit(){
     const t = text.trim()
     if(!t) return
-    onSend(user?.name || 'You', t)
+    onSend(userName || user?.user_metadata?.name || 'You', t)
     setText('')
   }
 
