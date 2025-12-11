@@ -1,9 +1,69 @@
 // FriendsModal.jsx
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useAuth } from '../AuthContext'
+import { supabase } from '../supabaseClient'
 
 export default function FriendsModal({ onClose }) {
+  const { user } = useAuth()
+  const [inputValue, setInputValue] = useState('')
+  const [error, setError] = useState('')
   const modalRef = useRef(null)
+
+  const addFriend = async () => {
+    setError('')
+    if (!inputValue.trim()) {
+      setError('Введите username#discriminator')
+      return
+    }
+    const match = inputValue.trim().match(/^(.+)#(\d{4})$/)
+    if (!match) {
+      setError('Неверный формат. Используйте Username#0000')
+      return
+    }
+    const username = match[1]
+    const discriminator = parseInt(match[2])
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .eq('discriminator', discriminator)
+        .single()
+      if (profileError || !profile) {
+        setError('Пользователь не найден')
+        return
+      }
+      if (profile.id === user.id) {
+        setError('Нельзя добавить себя в друзья')
+        return
+      }
+      const { data: existing } = await supabase
+        .from('friends')
+        .select('id')
+        .or(`user_id.eq.${user.id}.and.friend_id.eq.${profile.id},user_id.eq.${profile.id}.and.friend_id.eq.${user.id}`)
+        .single()
+      if (existing) {
+        setError('Запрос уже отправлен или вы уже друзья')
+        return
+      }
+      const { error: insertError } = await supabase
+        .from('friends')
+        .insert({
+          user_id: user.id,
+          friend_id: profile.id,
+          status: 'pending'
+        })
+      if (insertError) {
+        setError('Ошибка при отправке запроса')
+        return
+      }
+      setInputValue('')
+      alert('Запрос на дружбу отправлен!')
+    } catch (err) {
+      setError('Неизвестная ошибка')
+    }
+  }
 
   useEffect(() => {
     // поставить фокус на модалку для клавиатурной доступности
@@ -100,6 +160,8 @@ export default function FriendsModal({ onClose }) {
             <div style={{ marginBottom: 12 }} onClick={(e) => e.stopPropagation()}>
               <label style={{ display: 'block', marginBottom: 6 }}>Добавить друга</label>
               <input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Username#0000"
                 style={{ width: '100%', padding: 8, borderRadius: 6 }}
                 onMouseDown={(e) => {
@@ -113,8 +175,9 @@ export default function FriendsModal({ onClose }) {
                 onFocus={() => console.log('input onFocus')}
                 onBlur={() => console.log('input onBlur')}
               />
+              {error && <div style={{ color: 'red', marginTop: 4 }}>{error}</div>}
               <div style={{ marginTop: 8 }}>
-                <button onClick={() => console.log('Add friend pressed')}>Добавить</button>
+                <button onClick={addFriend}>Добавить</button>
               </div>
             </div>
 

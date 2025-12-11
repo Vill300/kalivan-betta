@@ -3,10 +3,12 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useLang } from '../LangContext'
 import FriendsModal from './FriendsModal'
 
+
 export default function ChannelList({channels, active, onSelect, onDelete}){
   const { t } = useLang()
   const [menu, setMenu] = useState({ visible: false, x: 0, y: 0, channelId: null })
   const [friendsModalOpen, setFriendsModalOpen] = useState(false)
+
   const containerRef = useRef()
 
   useEffect(()=>{

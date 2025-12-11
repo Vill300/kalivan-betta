@@ -4,6 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Create profiles table
 CREATE TABLE profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
   name TEXT,
   discriminator INTEGER,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
@@ -67,18 +68,11 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 DECLARE
   user_name TEXT;
-  disc INTEGER;
 BEGIN
   user_name := NEW.raw_user_meta_data->>'name';
-  -- Generate unique discriminator
-  SELECT COALESCE(MAX(discriminator), 0) + 1 INTO disc
-  FROM profiles
-  WHERE name = user_name;
-  IF disc < 1 THEN disc := 1; END IF;
-  IF disc > 9999 THEN disc := 9999; END IF; -- or handle overflow
   
-  INSERT INTO public.profiles (id, name, discriminator)
-  VALUES (NEW.id, user_name, disc);
+  INSERT INTO public.profiles (id, username)
+  VALUES (NEW.id, user_name);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
