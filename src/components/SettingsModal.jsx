@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { useAuth } from '../AuthContext'
 import { useLang } from '../LangContext'
 
-export default function SettingsModal({ onClose, initialTab }){
+export default function SettingsModal({ onClose, initialTab, open }){
   const { user, login, logout } = useAuth()
   const [tab, setTab] = useState(initialTab || 'account')
   const [name, setName] = useState(user?.name || '')
   const { t, lang, setLang } = useLang()
+
+  if(!open) return null
 
   useEffect(()=>{
     setName(user?.name || '')
