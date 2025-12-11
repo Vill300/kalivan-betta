@@ -83,7 +83,11 @@ export default function AuthPage(){
           return
         }
         // Registration logic
-        await register(email.trim(), password, name.trim())
+        const result = await register(email.trim(), password, name.trim())
+        if (result.user) {
+          setError(t('signup_success'))
+          setMode('login')
+        }
       }
     } catch (err) {
       setError(err.message || t('auth_error'))

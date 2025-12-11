@@ -44,6 +44,7 @@ const translations = {
     ,password_min_length: 'Password must be at least 8 characters'
     ,loading: 'Loading...'
     ,auth_error: 'Authentication error'
+    ,signup_success: 'Registration successful, please sign in'
   },
   ru: {
     signin_title: 'Войдите в Kalivan',
@@ -88,6 +89,7 @@ const translations = {
     ,password_min_length: 'Пароль должен содержать минимум 8 символов'
     ,loading: 'Загрузка...'
     ,auth_error: 'Ошибка аутентификации'
+    ,signup_success: 'Регистрация успешна, войдите в систему'
   },
   uk: {
     signin_title: 'Увійдіть в Kalivan',
@@ -132,6 +134,7 @@ const translations = {
     ,password_min_length: 'Пароль повинен містити мінімум 8 символів'
     ,loading: 'Завантаження...'
     ,auth_error: 'Помилка аутентифікації'
+    ,signup_success: 'Реєстрація успішна, увійдіть в систему'
   }
 }
 

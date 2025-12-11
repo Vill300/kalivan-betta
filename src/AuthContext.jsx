@@ -10,22 +10,40 @@ export function AuthProvider({ children }){
   useEffect(() => {
     // Получить текущую сессию
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-      setLoading(false)
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error) {
+          console.error('Error getting session:', error)
+        }
+        setUser(session?.user ?? null)
+      } catch (err) {
+        console.error('Session fetch failed:', err)
+        setUser(null)
+      } finally {
+        setLoading(false)
+      }
     }
 
     getSession()
+
+    // Timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      setLoading(false)
+    }, 5000)
 
     // Слушать изменения аутентификации
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user ?? null)
         setLoading(false)
+        clearTimeout(timeout)
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeout)
+    }
   }, [])
 
   const login = async (email, password) => {

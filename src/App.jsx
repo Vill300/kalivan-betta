@@ -135,7 +135,7 @@ function App() {
   const activeChannel = channels.find(c => c.id === activeChannelId)
   const activeMessages = messages[activeChannelId] || []
 
-  if(loading || loadingData) return <div>Loading...</div>
+  if(loadingData) return <div>Loading...</div>
   if(!user) return <AuthPage />
 
   return (
