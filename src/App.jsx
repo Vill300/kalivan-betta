@@ -3,6 +3,7 @@ import './App.css'
 import ServerList from './components/ServerList'
 import ChannelList from './components/ChannelList'
 import Chat from './components/Chat'
+import FriendsList from './components/FriendsList'
 import AuthPage from './components/AuthPage'
 import { useAuth } from './AuthContext'
 import { useLang } from './LangContext'
@@ -16,6 +17,7 @@ function App() {
   const [activeChannelId, setActiveChannelId] = useState(null)
   const [userDisplayName, setUserDisplayName] = useState('')
   const [friendRequests, setFriendRequests] = useState([])
+  const [friends, setFriends] = useState([])
 
   useEffect(() => {
     if (!user) {
@@ -97,6 +99,24 @@ function App() {
         console.log("Loaded friend requests:", friendsData)
       } else {
         console.log("Error loading friend requests:", friendsError)
+      }
+
+      // Load friends list with status
+      const { data: friendsList, error: friendsListError } = await supabase
+        .from('friends')
+        .select(`
+          id,
+          friend_id,
+          profiles:friend_id (username, status, last_seen)
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'accepted')
+
+      if (!friendsListError) {
+        setFriends(friendsList || [])
+        console.log("Loaded friends list:", friendsList)
+      } else {
+        console.log("Error loading friends list:", friendsListError)
       }
     }
 
@@ -207,6 +227,7 @@ function App() {
       <ServerList />
       <div className="main-area">
         <ChannelList channels={channels} active={activeChannelId} onSelect={setActiveChannelId} onDelete={deleteChannel} />
+        <FriendsList friends={friends} />
         <Chat channel={{ ...activeChannel, messages: activeMessages }} onSend={(author, text) => sendMessage(activeChannelId, author, text)} userName={userDisplayName} />
       </div>
     </div>

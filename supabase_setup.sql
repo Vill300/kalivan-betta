@@ -7,6 +7,8 @@ CREATE TABLE profiles (
   username TEXT UNIQUE NOT NULL,
   name TEXT,
   discriminator INTEGER,
+  status TEXT DEFAULT 'offline',
+  last_seen TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
@@ -73,8 +75,8 @@ BEGIN
   user_name := NEW.raw_user_meta_data->>'name';
   user_discriminator := (NEW.raw_user_meta_data->>'discriminator')::INTEGER;
  
-  INSERT INTO public.profiles (id, username, discriminator)
-  VALUES (NEW.id, user_name, user_discriminator);
+  INSERT INTO public.profiles (id, username, discriminator, status)
+  VALUES (NEW.id, user_name, user_discriminator, 'offline');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

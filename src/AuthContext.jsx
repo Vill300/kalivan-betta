@@ -37,12 +37,23 @@ export function AuthProvider({ children }){
         setUser(session?.user ?? null)
         setLoading(false)
         clearTimeout(timeout)
+        
+        // Обновить статус пользователя при изменении аутентификации
+        if (session?.user) {
+          await updateUserStatus('online')
+        } else {
+          await updateUserStatus('offline')
+        }
       }
     )
 
     return () => {
       subscription.unsubscribe()
       clearTimeout(timeout)
+      // Установить статус offline при размонтировании
+      if (user) {
+        updateUserStatus('offline')
+      }
     }
   }, [])
 
@@ -121,7 +132,28 @@ export function AuthProvider({ children }){
     return data
   }
 
+  const updateUserStatus = async (status) => {
+    if (!user) return
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          status: status,
+          last_seen: status === 'online' ? null : new Date().toISOString()
+        })
+        .eq('id', user.id)
+      
+      if (error) {
+        console.error('Error updating user status:', error)
+      }
+    } catch (err) {
+      console.error('Status update failed:', err)
+    }
+  }
+
   const logout = async () => {
+    await updateUserStatus('offline')
     const { error } = await supabase.auth.signOut()
     if (error) throw error
   }
