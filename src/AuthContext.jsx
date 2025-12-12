@@ -56,40 +56,67 @@ export function AuthProvider({ children }){
   }
 
   const register = async (email, password, name) => {
+    console.log('Starting registration for:', email, name)
+
+    // Check if username already exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', name)
+      .single()
+
+    if (existingUser) {
+      console.error('Username already exists:', name)
+      throw new Error('Username already exists')
+    }
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking username:', checkError)
+      throw checkError
+    }
+
+    // Generate unique discriminator first
+    let discriminator
+    let attempts = 0
+    do {
+      discriminator = Math.floor(Math.random() * 9000) + 1000 // 1000-9999
+      console.log('Trying discriminator:', discriminator)
+      const { data: existing, error: discError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('discriminator', discriminator)
+        .single()
+      if (discError && discError.code !== 'PGRST116') {
+        console.error('Discriminator check error:', discError)
+      }
+      if (!existing) {
+        console.log('Discriminator available:', discriminator)
+        break
+      }
+      attempts++
+    } while (attempts < 10)
+
+    if (attempts >= 10) {
+      console.error('Failed to generate unique discriminator after 10 attempts')
+      throw new Error('Failed to generate unique discriminator')
+    }
+
+    // Sign up with both name and discriminator
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           name: name,
+          discriminator: discriminator,
         }
       }
     })
-    if (error) throw error
-
-    // Generate unique discriminator
-    let discriminator
-    let attempts = 0
-    do {
-      discriminator = Math.floor(Math.random() * 9000) + 1000 // 1000-9999
-      const { data: existing } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('discriminator', discriminator)
-        .single()
-      if (!existing) break
-      attempts++
-    } while (attempts < 10)
-
-    if (attempts >= 10) throw new Error('Failed to generate unique discriminator')
-
-    // Update profile with discriminator
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ discriminator })
-      .eq('id', data.user.id)
-
-    if (updateError) throw updateError
+    if (error) {
+      console.error('SignUp error:', error)
+      throw error
+    }
+    console.log('SignUp successful, user ID:', data.user?.id)
 
     return data
   }

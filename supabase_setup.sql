@@ -68,11 +68,13 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 DECLARE
   user_name TEXT;
+  user_discriminator INTEGER;
 BEGIN
   user_name := NEW.raw_user_meta_data->>'name';
-  
-  INSERT INTO public.profiles (id, username)
-  VALUES (NEW.id, user_name);
+  user_discriminator := (NEW.raw_user_meta_data->>'discriminator')::INTEGER;
+ 
+  INSERT INTO public.profiles (id, username, discriminator)
+  VALUES (NEW.id, user_name, user_discriminator);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
