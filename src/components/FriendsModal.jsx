@@ -1,12 +1,58 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { supabase } from "../supabaseClient";
+import { useAuth } from "../AuthContext";
 
 export default function FriendsModal({ onClose }) {
   const modalRef = useRef(null);
+  const [username, setUsername] = useState("");
+  const { user } = useAuth();
 
   useEffect(() => {
     modalRef.current?.focus();
   }, []);
+
+  const addFriend = async () => {
+    console.log("Attempting to add friend with username:", username);
+    if (!username.trim()) {
+      console.log("Username is empty");
+      return;
+    }
+    if (!user) {
+      console.log("User not authenticated");
+      return;
+    }
+
+    // Find user by username
+    const { data: friendProfile, error: findError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', username.trim())
+      .single();
+
+    if (findError || !friendProfile) {
+      console.log("Error finding user or user not found:", findError);
+      return;
+    }
+
+    console.log("Found friend profile:", friendProfile);
+
+    // Insert friend request
+    const { data, error } = await supabase
+      .from('friends')
+      .insert({
+        user_id: user.id,
+        friend_id: friendProfile.id,
+        status: 'pending'
+      });
+
+    if (error) {
+      console.log("Error inserting friend request:", error);
+    } else {
+      console.log("Friend request sent successfully:", data);
+      setUsername("");
+    }
+  };
 
   return createPortal(
     <div
@@ -60,6 +106,8 @@ export default function FriendsModal({ onClose }) {
         <label>Добавить друга</label>
         <input
           placeholder="Введите никнейм"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           style={{
             width: "100%",
             marginTop: 10,
@@ -68,7 +116,7 @@ export default function FriendsModal({ onClose }) {
           }}
         />
 
-        <button style={{ marginTop: 10 }}>Добавить</button>
+        <button onClick={addFriend} style={{ marginTop: 10 }}>Добавить</button>
       </div>
     </div>,
     document.body

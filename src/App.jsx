@@ -15,6 +15,7 @@ function App() {
   const [messages, setMessages] = useState({})
   const [activeChannelId, setActiveChannelId] = useState(null)
   const [userDisplayName, setUserDisplayName] = useState('')
+  const [friendRequests, setFriendRequests] = useState([])
 
   useEffect(() => {
     if (!user) {
@@ -76,6 +77,27 @@ function App() {
         }
       }
       setMessages(messagesData)
+
+      // Load friend requests
+      const { data: friendsData, error: friendsError } = await supabase
+        .from('friends')
+        .select(`
+          id,
+          user_id,
+          friend_id,
+          status,
+          created_at,
+          profiles:user_id (username)
+        `)
+        .eq('friend_id', user.id)
+        .eq('status', 'pending')
+
+      if (!friendsError) {
+        setFriendRequests(friendsData || [])
+        console.log("Loaded friend requests:", friendsData)
+      } else {
+        console.log("Error loading friend requests:", friendsError)
+      }
     }
 
     loadData()
@@ -108,8 +130,18 @@ function App() {
       })
       .subscribe()
 
+    // Subscribe to friend requests
+    const friendsChannel = supabase
+      .channel('friends')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'friends', filter: `friend_id=eq.${user.id}` }, (payload) => {
+        console.log("New friend request received:", payload.new)
+        setFriendRequests(prev => [...prev, payload.new])
+      })
+      .subscribe()
+
     return () => {
       supabase.removeChannel(channel)
+      supabase.removeChannel(friendsChannel)
     }
   }, [user])
 
